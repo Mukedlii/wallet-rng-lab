@@ -23,7 +23,7 @@ from bip_utils import (
     Bip44Coins,
     Bip84,
     Bip84Coins,
-    Bip39WordsNum,
+    Bip32Slip10Ed25519,
 )
 from solders.keypair import Keypair
 import base58
@@ -75,9 +75,8 @@ def generate_wallet(chain: str) -> dict[str, str]:
         }
 
     if chain == "sol":
-        ctx = (Bip44.FromSeed(seed, Bip44Coins.SOLANA)
-               .Purpose().Coin().Account(0).Change(Bip44Changes.CHAIN_EXT)
-               .AddressIndex(0))
+        # Solana Ed25519 derivation uses hardened child indices.
+        ctx = Bip32Slip10Ed25519.FromSeed(seed).DerivePath("m/44'/501'/0'/0'")
         seed32 = ctx.PrivateKey().Raw().ToBytes()
         keypair = Keypair.from_seed(seed32)
         return {
