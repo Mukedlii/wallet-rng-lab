@@ -10,6 +10,7 @@ from research_engine.vulnerabilities.catalog import seed_catalog
 from research_engine.rng.diagnostics import diagnose
 from research_engine.notifications.telegram import send
 from research_engine.monitoring.repair import analyze_traceback
+from research_engine.monitoring.mainnet import monitor_authorized_addresses
 def setup_logging(cfg):
  p=resolve_path(cfg["app"]["log_file"]); p.parent.mkdir(parents=True,exist_ok=True)
  logging.basicConfig(level=logging.INFO,format="%(asctime)s %(levelname)s %(message)s",handlers=[logging.FileHandler(p,encoding="utf-8"),logging.StreamHandler()])
@@ -27,8 +28,12 @@ def run_cycle():
     except Exception as ai_error: item["raw"]["ai_triage"]={"status":"provider-error","error_type":type(ai_error).__name__,"confirmed":False}
   new=[x for x in items if db.add_advisory(x)]
   rng=diagnose(nbytes=int(cfg["rng"].get("sample_bytes",65536)))
+  mainnet=[]
+  if cfg.get("mainnet_monitor",{}).get("allowlist"):
+   mainnet=monitor_authorized_addresses(cfg)
+   for snapshot in mainnet: db.add_chain_snapshot(snapshot)
   cpu=psutil.cpu_percent(interval=.2); mem=psutil.virtual_memory().percent
-  summary={"advisories_seen":len(items),"new_advisories":len(new),"rng":rng,"cpu_percent":cpu,"memory_percent":mem}
+  summary={"advisories_seen":len(items),"new_advisories":len(new),"rng":rng,"mainnet_addresses_checked":len(mainnet),"mainnet_snapshots":mainnet,"cpu_percent":cpu,"memory_percent":mem}
   if cpu>=float(cfg.get("monitoring",{}).get("max_cpu_percent",90)) or mem>=float(cfg.get("monitoring",{}).get("max_memory_percent",90)):
    db.event("WARN","resource_threshold_exceeded",{"cpu_percent":cpu,"memory_percent":mem})
    send("Wallet RNG Engine: magas erőforrás-használat — CPU "+str(cpu)+"%, RAM "+str(mem)+"%.")
