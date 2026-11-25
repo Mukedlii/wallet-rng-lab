@@ -9,6 +9,7 @@ from research_engine.vulnerabilities.reproductions import milk_sad_entropy_ceili
 from research_engine.research.feeds import SUSPICIOUS_RNG
 from research_engine.monitoring.repair import analyze_traceback
 from research_engine.research.ai_review import propose_noncrypto_patch
+from research_engine.monitoring.mainnet import monitor_authorized_addresses
 
 class EngineTests(unittest.TestCase):
  def test_wallet_chains_and_paths(self):
@@ -54,6 +55,11 @@ class EngineTests(unittest.TestCase):
    patch.write_text(json.dumps({"path":str(Path("research_engine/security/vault.py").resolve()),"old":"x","new":"y"}))
    result=subprocess.run([sys.executable,"scripts/repair.py",str(patch)],capture_output=True,text=True)
    self.assertEqual(result.returncode,2)
+ def test_mainnet_monitor_empty_allowlist_is_noop(self):
+  self.assertEqual(monitor_authorized_addresses({"mainnet_monitor":{"allowlist":[]}}),[])
+ def test_mainnet_monitor_rejects_unknown_chain(self):
+  with self.assertRaises(ValueError):
+   monitor_authorized_addresses({"mainnet_monitor":{"allowlist":[{"chain":"x","address":"abc"}]}})
  def test_catalog_and_sqlite_persistence(self):
   with tempfile.TemporaryDirectory() as d:
    db=Store(Path(d)/"test.db"); seed_catalog(db)
