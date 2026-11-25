@@ -53,7 +53,7 @@ def generate_wallet(chain: str) -> dict[str, str]:
 
     if chain == "btc":
         ctx = (Bip84.FromSeed(seed, Bip84Coins.BITCOIN)
-               .Account(0).Change(Bip84Changes.CHAIN_EXT).AddressIndex(0))
+               .Purpose().Coin().Account(0).Change(Bip44Changes.CHAIN_EXT).AddressIndex(0))
         return {
             "chain": "Bitcoin (native SegWit / BIP84)",
             "address": ctx.PublicKey().ToAddress(),

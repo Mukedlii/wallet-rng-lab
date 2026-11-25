@@ -1,0 +1,25 @@
+app:
+  database: data/research.sqlite3
+  log_file: logs/engine.log
+research:
+  interval_seconds: 21600
+  request_timeout_seconds: 20
+  nvd_days_back: 14
+  github_advisory_pages: 2
+  monitored_repositories:
+    - bitcoin/bitcoin
+    - bitcoinjs/bitcoinjs-lib
+    - ethereum/go-ethereum
+    - ethereumjs/ethereumjs-monorepo
+    - solana-labs/solana
+    - anza-xyz/solana-sdk
+rng:
+  sample_bytes: 65536
+wallets:
+  max_wallets_per_run: 3
+  vault_file: data/wallet-vault.jsonl
+monitoring:
+  max_cpu_percent: 90
+  max_memory_percent: 90
+repair:
+  auto_apply: false
