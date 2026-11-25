@@ -5,15 +5,23 @@ from research_engine.database.store import Store
 from research_engine.rng.diagnostics import diagnose,WeakLCG
 from research_engine.monitoring.worker import run_cycle,run_forever
 from research_engine.wallets.service import create_test_wallet
+from research_engine.monitoring.mainnet import monitor_authorized_addresses
 from research_engine.security.vault import decrypt_record
 def main():
  p=argparse.ArgumentParser(); s=p.add_subparsers(dest="cmd",required=True)
- s.add_parser("once"); s.add_parser("worker"); s.add_parser("rng-test"); s.add_parser("vulnerabilities")
+ s.add_parser("once"); s.add_parser("worker"); s.add_parser("monitor-mainnet"); s.add_parser("rng-test"); s.add_parser("vulnerabilities")
  vc=s.add_parser("vault-check"); vc.add_argument("--vault",default=None)
  ve=s.add_parser("vault-export"); ve.add_argument("--out",required=True)
  w=s.add_parser("wallet"); w.add_argument("--chain",choices=["btc","eth","sol"],required=True)
  a=p.parse_args()
  if a.cmd=="once": print(json.dumps(run_cycle(),indent=2))
+ elif a.cmd=="monitor-mainnet":
+  c=load_config(); results=monitor_authorized_addresses(c)
+  db=Store(resolve_path(c["app"]["database"]))
+  try:
+   for item in results: db.add_chain_snapshot(item)
+  finally: db.close()
+  print(json.dumps(results,indent=2,ensure_ascii=False))
  elif a.cmd=="worker": run_forever()
  elif a.cmd=="rng-test": print(json.dumps({"os_csprng":diagnose(),"test_only_weak_lcg":diagnose(WeakLCG(7))},indent=2))
  elif a.cmd=="vault-check":

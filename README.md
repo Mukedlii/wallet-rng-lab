@@ -27,6 +27,12 @@ Run tests with .\scripts	est.ps1. Run one research cycle with .\.venv\Scripts\py
 
 Create an encrypted test wallet with .\.venv\Scripts\python.exe -m research_engine wallet --chain btc (also eth or sol). The command prints only public metadata. Back up the encrypted vault and passphrase separately. Run diagnostics with .\.venv\Scripts\python.exe -m research_engine rng-test. Verify a recovered vault/passphrase without revealing secrets with .\.venv\Scripts\python.exe -m research_engine vault-check. Export the encrypted vault with .\.venv\Scripts\python.exe -m research_engine vault-export --out D:\SecureBackup\wallet-vault.jsonl.
 
+## Read-only mainnet address monitoring
+
+The `monitor-mainnet` command queries only entries explicitly listed under `mainnet_monitor.allowlist` in config.yaml. It supports BTC via mempool.space, ETH via Blockscout (or optional ETH_MAINNET_RPC_URL for balance and nonce), and SOL via Solana mainnet RPC (optional SOL_MAINNET_RPC_URL). Balances and recent transaction metadata are stored in SQLite. It does not enumerate addresses, scan random private keys, or search for funded wallets. Add only addresses you own or are explicitly authorized to monitor. Public RPC/explorer services may rate-limit requests.
+
+Run: `.\.venv\Scripts\python.exe -m research_engine monitor-mainnet`.
+
 ## Historical vulnerability notes
 
 CVE-2023-31290: Trust Wallet Core before 3.1.1 and browser extension 0.0.172–0.0.182 used an MT19937 generator seeded with 32 bits in the affected WASM path. The fixed versions are Core 3.1.1 and extension 0.0.183. This browser-extension incident affected Ethereum and Solana among other supported assets; it does not mean all Trust Wallet platforms were vulnerable.

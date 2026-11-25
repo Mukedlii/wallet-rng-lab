@@ -23,3 +23,8 @@ monitoring:
   max_memory_percent: 90
 repair:
   auto_apply: false
+
+mainnet_monitor:
+  timeout_seconds: 20
+  # Add only addresses you own or are explicitly authorized to monitor. Empty by default.
+  allowlist: []

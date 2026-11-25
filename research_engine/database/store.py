@@ -12,6 +12,7 @@ class Store:
   CREATE TABLE IF NOT EXISTS runs(id INTEGER PRIMARY KEY AUTOINCREMENT,started_at TEXT NOT NULL,finished_at TEXT,status TEXT NOT NULL,details TEXT);
   CREATE TABLE IF NOT EXISTS events(id INTEGER PRIMARY KEY AUTOINCREMENT,created_at TEXT NOT NULL,level TEXT NOT NULL,event TEXT NOT NULL,details TEXT);
   CREATE TABLE IF NOT EXISTS wallet_metadata(id TEXT PRIMARY KEY,chain TEXT,address TEXT,derivation_path TEXT,created_at TEXT NOT NULL,vault_ref TEXT NOT NULL);
+  CREATE TABLE IF NOT EXISTS chain_snapshots(id INTEGER PRIMARY KEY AUTOINCREMENT,chain TEXT NOT NULL,address TEXT NOT NULL,checked_at TEXT NOT NULL,balance_native TEXT NOT NULL,unit TEXT NOT NULL,tx_count INTEGER,details_json TEXT NOT NULL);
   """); self.db.commit()
  def now(self): return datetime.now(timezone.utc).isoformat()
  def event(self,level,event,details=None):
@@ -26,4 +27,6 @@ class Store:
   c=self.db.execute("INSERT OR IGNORE INTO advisories VALUES(?,?,?,?,?,?,?,?)",(a["id"],a["source"],a["title"],a.get("url"),a.get("summary"),a.get("published"),json.dumps(a.get("raw",{}))[:20000],self.now())); self.db.commit(); return c.rowcount>0
  def add_wallet_metadata(self,wid,chain,address,path,ref):
   self.db.execute("INSERT INTO wallet_metadata VALUES(?,?,?,?,?,?)",(wid,chain,address,path,self.now(),ref)); self.db.commit()
+ def add_chain_snapshot(self,item):
+  self.db.execute("INSERT INTO chain_snapshots(chain,address,checked_at,balance_native,unit,tx_count,details_json) VALUES(?,?,?,?,?,?,?)",(item["chain"],item["address"],item["checked_at"],item["balance_native"],item["unit"],item.get("tx_count"),json.dumps(item.get("transactions",[]),ensure_ascii=False))); self.db.commit()
  def close(self): self.db.close()
